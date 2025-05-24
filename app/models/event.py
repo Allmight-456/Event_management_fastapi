@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey, JSON, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
-import enum
+from datetime import datetime
+from enum import Enum
 
-class RecurrenceType(str, enum.Enum):
+class RecurrenceType(str, Enum):
     """
     Define recurrence patterns for events.
     This supports the requirement for customizable recurrence patterns.
@@ -14,7 +15,6 @@ class RecurrenceType(str, enum.Enum):
     WEEKLY = "weekly"
     MONTHLY = "monthly"
     YEARLY = "yearly"
-    CUSTOM = "custom"  # For complex patterns stored in JSON
 
 class Event(Base):
     """
@@ -39,7 +39,7 @@ class Event(Base):
     
     # Recurrence support
     is_recurring = Column(Boolean, default=False, nullable=False)
-    recurrence_type = Column(Enum(RecurrenceType), default=RecurrenceType.NONE)
+    recurrence_type = Column(SQLEnum(RecurrenceType), default=RecurrenceType.NONE)
     recurrence_pattern = Column(JSON, nullable=True)  # Flexible pattern storage
     
     # Ownership and access control
@@ -81,7 +81,7 @@ class EventVersion(Base):
     start_time = Column(DateTime(timezone=True), nullable=False)
     end_time = Column(DateTime(timezone=True), nullable=False)
     is_recurring = Column(Boolean, nullable=False)
-    recurrence_type = Column(Enum(RecurrenceType))
+    recurrence_type = Column(SQLEnum(RecurrenceType))
     recurrence_pattern = Column(JSON, nullable=True)
     
     # Change tracking

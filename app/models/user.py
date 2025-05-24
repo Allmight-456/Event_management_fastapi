@@ -1,16 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
+from enum import Enum
 import enum
+from datetime import datetime
 
-class UserRole(str, enum.Enum):
+class UserRole(str, Enum):
     """
     Define user roles for the system.
     This enum approach ensures type safety and prevents invalid role assignments.
     """
-    ADMIN = "admin"       # System administrator
-    USER = "user"         # Regular user who can create events
+    USER = "user"
+    ADMIN = "admin"
 
 class User(Base):
     """
@@ -29,7 +31,7 @@ class User(Base):
     email = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(100), nullable=True)
-    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
+    role = Column(SQLEnum(UserRole), default=UserRole.USER, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     
     # Automatic timestamps for audit purposes

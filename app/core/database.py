@@ -1,30 +1,33 @@
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import QueuePool
-from .config import settings
+from app.core.config import settings
 
-# Create database engine with connection pooling for better performance
-# PostgreSQL's ACID properties help us maintain data consistency
-engine = create_engine(
-    settings.DATABASE_URL,
-    poolclass=QueuePool,
-    pool_size=20,
-    max_overflow=0,
-    pool_pre_ping=True,  # Validates connections before use
-    echo=settings.DEBUG  # Log SQL queries in debug mode
-)
+# Database engine configuration
+# For SQLite, we need to enable foreign key constraints and configure connection args
+if settings.DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        settings.DATABASE_URL,
+        connect_args={"check_same_thread": False},  # Needed for SQLite with FastAPI
+        echo=settings.DEBUG  # Log SQL queries in debug mode
+    )
+else:
+    # For PostgreSQL or other databases
+    engine = create_engine(
+        settings.DATABASE_URL,
+        echo=settings.DEBUG
+    )
 
-# Create session factory
+# Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for our SQLAlchemy models
+# Base class for models
 Base = declarative_base()
 
 def get_db():
     """
-    Dependency function to get database session.
-    This ensures proper session lifecycle management.
+    Database dependency for FastAPI endpoints.
+    Ensures proper connection handling and cleanup.
     """
     db = SessionLocal()
     try:

@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum as SQLEnum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
-import enum
+from datetime import datetime
+from enum import Enum
 
-class PermissionLevel(str, enum.Enum):
+class PermissionLevel(str, Enum):
     """
     Define permission levels for collaborative features.
     
@@ -13,9 +14,9 @@ class PermissionLevel(str, enum.Enum):
     - EDITOR: Can modify event details and manage viewer permissions
     - VIEWER: Read-only access to event details
     """
-    OWNER = "owner"
-    EDITOR = "editor"
     VIEWER = "viewer"
+    EDITOR = "editor"
+    OWNER = "owner"
 
 class EventPermission(Base):
     """
@@ -31,7 +32,7 @@ class EventPermission(Base):
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    permission_level = Column(Enum(PermissionLevel), nullable=False)
+    permission_level = Column(SQLEnum(PermissionLevel), nullable=False)
     
     # Audit trail for permission changes
     granted_by = Column(Integer, ForeignKey("users.id"), nullable=False)

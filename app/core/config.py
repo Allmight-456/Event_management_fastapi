@@ -1,44 +1,53 @@
 from pydantic_settings import BaseSettings
-from typing import Optional, List
+from pydantic import Field
+from typing import Optional
 import os
+from pathlib import Path
 
 class Settings(BaseSettings):
     """
-    Application configuration using Pydantic settings.
-    This approach provides automatic validation and environment variable loading.
+    Application settings with environment variable support.
+    Uses SQLite for development by default to avoid PostgreSQL dependency.
     """
-    # API Configuration
-    API_V1_STR: str = "/api/v1"
+    
+    # Application settings
     PROJECT_NAME: str = "Event Management API"
     VERSION: str = "1.0.0"
-    DESCRIPTION: str = "Collaborative Event Management System with versioning"
+    API_V1_STR: str = "/api/v1"
     
-    # Security Configuration
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    # Database settings - using SQLite for development
+    DATABASE_URL: str = Field(
+        default="sqlite:///./event_management.db",
+        description="Database connection URL"
+    )
+    
+    # For production, you can override with PostgreSQL:
+    # DATABASE_URL: str = "postgresql://user:password@localhost/event_management"
+    
+    # Security settings
+    SECRET_KEY: str = Field(
+        default="your-secret-key-change-in-production-this-should-be-very-long-and-random",
+        description="Secret key for JWT tokens"
+    )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
-    # Database Configuration
-    # PostgreSQL provides ACID properties which help with our transaction requirements
-    DATABASE_URL: str = "postgresql://user:password@localhost:5432/event_management"
+    # CORS settings
+    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:8000"]
     
-    # Redis Configuration (for caching and rate limiting)
-    REDIS_URL: str = "redis://localhost:6379"
+    # Rate limiting (if Redis is available)
+    REDIS_URL: Optional[str] = Field(
+        default=None,
+        description="Redis URL for rate limiting (optional)"
+    )
     
-    # Rate Limiting
-    RATE_LIMIT_PER_MINUTE: int = 100
-    
-    # CORS Configuration
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
-    
-    # Environment
-    ENVIRONMENT: str = "development"
-    DEBUG: bool = True
+    # Development settings
+    DEBUG: bool = Field(default=True, description="Enable debug mode")
     
     class Config:
         env_file = ".env"
         case_sensitive = True
-        
-# Create a global settings instance
+
+# Create global settings instance
 settings = Settings()
