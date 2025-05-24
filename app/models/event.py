@@ -57,38 +57,3 @@ class Event(Base):
     owner = relationship("User", back_populates="owned_events")
     permissions = relationship("EventPermission", back_populates="event", cascade="all, delete-orphan")
     versions = relationship("EventVersion", back_populates="event", cascade="all, delete-orphan")
-    
-class EventVersion(Base):
-    """
-    Version history for events - enables rollback and diff functionality.
-    
-    This model captures complete event state at each version, allowing us to:
-    - Track who made changes and when
-    - Enable rollback to previous versions
-    - Generate diffs between versions
-    - Maintain complete audit trail
-    """
-    __tablename__ = "event_versions"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False)
-    version_number = Column(Integer, nullable=False)
-    
-    # Snapshot of event data at this version
-    title = Column(String(200), nullable=False)
-    description = Column(Text, nullable=True)
-    location = Column(String(500), nullable=True)
-    start_time = Column(DateTime(timezone=True), nullable=False)
-    end_time = Column(DateTime(timezone=True), nullable=False)
-    is_recurring = Column(Boolean, nullable=False)
-    recurrence_type = Column(SQLEnum(RecurrenceType))
-    recurrence_pattern = Column(JSON, nullable=True)
-    
-    # Change tracking
-    changed_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    change_summary = Column(String(500), nullable=True)  # Brief description of changes
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    
-    # Relationships
-    event = relationship("Event", back_populates="versions")
-    changed_by_user = relationship("User")

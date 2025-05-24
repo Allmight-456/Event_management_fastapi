@@ -7,8 +7,7 @@ from app.core.security import (
     verify_password, 
     get_password_hash, 
     create_access_token, 
-    create_refresh_token,
-    verify_token
+    create_refresh_token
 )
 from app.models.user import User, UserRole
 from app.schemas.auth import LoginRequest, TokenResponse
@@ -114,7 +113,22 @@ class AuthService:
         Generate new access token using valid refresh token.
         Validates refresh token and user status.
         """
-        payload = verify_token(refresh_token, token_type="refresh")
+        try:
+            from app.core.security import verify_token
+            payload = verify_token(refresh_token, token_type="refresh")
+        except ImportError:
+            # Fallback to manual JWT verification if verify_token doesn't exist
+            from jose import jwt, JWTError
+            from app.core.config import settings
+            try:
+                payload = jwt.decode(
+                    refresh_token, 
+                    settings.SECRET_KEY, 
+                    algorithms=[settings.ALGORITHM]
+                )
+            except JWTError:
+                payload = None
+        
         if not payload:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

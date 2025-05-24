@@ -1,25 +1,25 @@
 # FastAPI and ASGI server
-fastapi
-uvicorn[standard]
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
 
 # Database
-sqlalchemy
-alembic
-psycopg2-binary
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
 
 # Authentication and Security
-python-jose[cryptography]
-passlib[bcrypt]
-python-multipart
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
 
 # Configuration and Validation
-pydantic[email]
+pydantic[email]==2.5.0
 pydantic-settings
 python-dotenv
 
 # Rate Limiting and Caching
-redis
-slowapi
+redis==5.0.1
+slowapi==0.1.9
 msgpack
 
 # Testing
@@ -58,4 +58,4 @@ celery[redis]
 psycopg2-pool
 
 # Environment-specific
-gunicorn  # Production WSGI server
+gunicorn==21.2.0  # Production WSGI server

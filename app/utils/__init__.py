@@ -1,9 +1,4 @@
-"""
-Utils package initialization.
-
-This package contains utility functions and helper classes
-used throughout the application.
-"""
+"""Utility functions and helper classes."""
 
 from app.utils.permissions import PermissionManager
 from app.utils.diff import DiffGenerator

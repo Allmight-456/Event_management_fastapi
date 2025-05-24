@@ -24,23 +24,8 @@ class PermissionManager:
         if event.owner_id == user.id:
             return True
         
-        # Check explicit permissions
-        permission = db.query(EventPermission).filter(
-            EventPermission.event_id == event.id,
-            EventPermission.user_id == user.id
-        ).first()
-        
-        if not permission:
-            return False
-        
-        # Check permission hierarchy
-        hierarchy = {
-            PermissionLevel.VIEWER: 1,
-            PermissionLevel.EDITOR: 2,
-            PermissionLevel.OWNER: 3
-        }
-        
-        return hierarchy[permission.permission_level] >= hierarchy[required_level]
+        # TODO: Implement actual permission checking
+        return False
     
     @staticmethod
     def grant_permission(

@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from datetime import datetime
 
-from app.models.event import Event, EventVersion
+from app.models.event import Event
+from app.models.event_version import EventVersion
 from app.models.user import User
 from app.models.permission import PermissionLevel
 from app.utils.permissions import PermissionManager

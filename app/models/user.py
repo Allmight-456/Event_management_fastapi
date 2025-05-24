@@ -39,5 +39,5 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
     
     # Relationships
-    owned_events = relationship("Event", back_populates="owner", cascade="all, delete-orphan")
-    permissions = relationship("EventPermission", back_populates="user", cascade="all, delete-orphan")
+    owned_events = relationship("Event", back_populates="owner")
+    permissions = relationship("EventPermission", back_populates="user")

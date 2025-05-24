@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -71,7 +71,7 @@ def get_db():
 def init_db():
     """Initialize database tables."""
     # Import all models to ensure they're registered
-    from app.models import user, event, permission, event_version
+    from app.models import User, Event, EventPermission, EventVersion
     
     # Create all tables
     Base.metadata.create_all(bind=engine)
@@ -83,3 +83,13 @@ def get_db_info():
         "url_masked": settings.DATABASE_URL.split("@")[-1] if "@" in settings.DATABASE_URL else "local",
         "is_connected": True  # You can add actual connection check here
     }
+
+def test_connection():
+    """Test database connection."""
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('SELECT 1'))
+            return True
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return False

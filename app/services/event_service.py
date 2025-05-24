@@ -4,7 +4,8 @@ from sqlalchemy import and_, or_
 from fastapi import HTTPException, status
 from datetime import datetime, timedelta
 
-from app.models.event import Event, EventVersion, RecurrenceType
+from app.models.event import Event, RecurrenceType
+from app.models.event_version import EventVersion
 from app.models.user import User
 from app.models.permission import EventPermission, PermissionLevel
 from app.schemas.event import EventCreate, EventUpdate, EventResponse

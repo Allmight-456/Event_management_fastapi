@@ -1,14 +1,10 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field
-from typing import Optional, List
-import os
+from pydantic import Field, field_validator
+from typing import Optional, List, Union
 from pathlib import Path
 
 class Settings(BaseSettings):
-    """
-    Application settings with environment variable support.
-    Comprehensive configuration for all integrations.
-    """
+    """Application settings with environment variable support."""
     
     # Application settings
     PROJECT_NAME: str = "Event Management API"
@@ -38,57 +34,39 @@ class Settings(BaseSettings):
     )
     
     # CORS settings
-    BACKEND_CORS_ORIGINS: List[str] = [
+    BACKEND_CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000", 
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "http://localhost:5173"
     ]
     
+    @field_validator('BACKEND_CORS_ORIGINS', mode='before')
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+        if isinstance(v, str) and not v.startswith('['):
+            return [i.strip() for i in v.split(',')]
+        elif isinstance(v, (list, str)):
+            return v
+        raise ValueError(v)
+    
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100
     
     # Environment settings
-    ENVIRONMENT: str = Field(default="development", description="Environment (development/staging/production)")
+    ENVIRONMENT: str = Field(default="development", description="Environment")
     DEBUG: bool = Field(default=True, description="Enable debug mode")
-    
-    # Email configuration (for future notifications)
-    SMTP_SERVER: Optional[str] = None
-    SMTP_PORT: int = 587
-    SMTP_USERNAME: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
-    
-    # File storage configuration
-    UPLOAD_DIR: str = "./uploads"
-    MAX_FILE_SIZE_MB: int = 10
-    
-    # External API configuration (for calendar integrations)
-    GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = None
-    GOOGLE_CALENDAR_CLIENT_SECRET: Optional[str] = None
-    OUTLOOK_CLIENT_ID: Optional[str] = None
-    OUTLOOK_CLIENT_SECRET: Optional[str] = None
-    
-    # Webhook URLs for notifications
-    SLACK_WEBHOOK_URL: Optional[str] = None
-    DISCORD_WEBHOOK_URL: Optional[str] = None
-    
-    # Monitoring and logging
-    SENTRY_DSN: Optional[str] = None
-    LOG_LEVEL: str = "INFO"
     
     @property
     def is_production(self) -> bool:
-        """Check if running in production environment."""
         return self.ENVIRONMENT.lower() == "production"
     
     @property
     def is_development(self) -> bool:
-        """Check if running in development environment."""
         return self.ENVIRONMENT.lower() == "development"
     
     @property
     def database_provider(self) -> str:
-        """Detect database provider from URL."""
         if self.DATABASE_URL.startswith("sqlite"):
             return "sqlite"
         elif self.DATABASE_URL.startswith("postgresql"):
@@ -100,12 +78,10 @@ class Settings(BaseSettings):
     
     @property
     def is_sqlite(self) -> bool:
-        """Check if using SQLite database."""
         return self.database_provider == "sqlite"
     
     @property
     def is_postgresql(self) -> bool:
-        """Check if using PostgreSQL database."""
         return self.database_provider == "postgresql"
     
     class Config:

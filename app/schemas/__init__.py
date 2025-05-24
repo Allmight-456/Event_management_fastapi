@@ -5,7 +5,7 @@ This package contains Pydantic models for request/response validation
 and serialization throughout the API.
 """
 
-from app.schemas.user import UserCreate, UserUpdate, UserResponse, UserInDB
+from app.schemas.user import UserCreate, UserUpdate, UserResponse
 from app.schemas.event import EventCreate, EventUpdate, EventResponse, EventBatchCreate
 from app.schemas.auth import (
     LoginRequest, TokenResponse, TokenRefresh, TokenValidationResponse,
@@ -17,7 +17,6 @@ __all__ = [
     "UserCreate",
     "UserUpdate", 
     "UserResponse",
-    "UserInDB",
     "EventCreate",
     "EventUpdate",
     "EventResponse", 

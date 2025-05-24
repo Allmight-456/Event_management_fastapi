@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -265,3 +265,8 @@ async def get_event_collaborators(
         "total_collaborators": len(collaborators),
         "collaborators": collaborators
     }
+
+@router.get("/")
+async def get_collaboration():
+    """Collaboration endpoint - placeholder."""
+    return {"message": "Collaboration endpoint - coming soon"}

@@ -9,6 +9,7 @@ from datetime import datetime
 
 from app.core.config import settings
 from app.api.v1 import auth, events, collaboration
+from app.models import User, Event, EventPermission, EventVersion
 
 # Create rate limiter instance
 limiter = Limiter(key_func=get_remote_address)

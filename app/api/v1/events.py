@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from datetime import datetime
 from slowapi import Limiter
@@ -20,6 +20,7 @@ limiter = Limiter(key_func=get_remote_address)
 @router.post("/", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("20/minute")
 async def create_event(
+    request: Request,  # Required for rate limiting
     event_data: EventCreate,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -34,6 +35,7 @@ async def create_event(
 @router.post("/batch", response_model=List[EventResponse], status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/minute")
 async def create_batch_events(
+    request: Request,  # Required for rate limiting
     batch_data: EventBatchCreate,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -46,7 +48,9 @@ async def create_batch_events(
     return events
 
 @router.get("/", response_model=List[EventResponse])
-async def get_events(
+@limiter.limit("30/minute")
+async def get_events_list(
+    request: Request,  # Required for rate limiting
     skip: int = Query(0, ge=0, description="Number of events to skip"),
     limit: int = Query(100, ge=1, le=100, description="Number of events to return"),
     start_date: Optional[datetime] = Query(None, description="Filter events starting after this date"),
@@ -65,7 +69,9 @@ async def get_events(
     return events
 
 @router.get("/{event_id}", response_model=EventResponse)
+@limiter.limit("60/minute")
 async def get_event(
+    request: Request,  # Required for rate limiting
     event_id: int,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -94,7 +100,9 @@ async def get_event(
     return event
 
 @router.put("/{event_id}", response_model=EventResponse)
+@limiter.limit("10/minute")
 async def update_event(
+    request: Request,  # Required for rate limiting
     event_id: int,
     event_data: EventUpdate,
     current_user: User = Depends(get_current_active_user),
@@ -115,7 +123,9 @@ async def update_event(
     return updated_event
 
 @router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("5/minute")
 async def delete_event(
+    request: Request,  # Required for rate limiting
     event_id: int,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -135,7 +145,9 @@ async def delete_event(
 
 # Version management endpoints
 @router.get("/{event_id}/history")
+@limiter.limit("30/minute")
 async def get_event_history(
+    request: Request,  # Required for rate limiting
     event_id: int,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -155,7 +167,9 @@ async def get_event_history(
     return {"event_id": event_id, "versions": history}
 
 @router.get("/{event_id}/versions/{version_number}")
+@limiter.limit("30/minute")
 async def get_event_version(
+    request: Request,  # Required for rate limiting
     event_id: int,
     version_number: int,
     current_user: User = Depends(get_current_active_user),
@@ -181,7 +195,9 @@ async def get_event_version(
     return version
 
 @router.post("/{event_id}/rollback/{version_number}", response_model=EventResponse)
+@limiter.limit("5/minute")
 async def rollback_event(
+    request: Request,  # Required for rate limiting
     event_id: int,
     version_number: int,
     current_user: User = Depends(get_current_active_user),
@@ -202,7 +218,9 @@ async def rollback_event(
     return rolled_back_event
 
 @router.get("/{event_id}/diff/{version1}/{version2}")
+@limiter.limit("20/minute")
 async def compare_versions(
+    request: Request,  # Required for rate limiting
     event_id: int,
     version1: int,
     version2: int,
@@ -224,7 +242,9 @@ async def compare_versions(
     return diff
 
 @router.get("/{event_id}/changelog")
+@limiter.limit("30/minute")
 async def get_event_changelog(
+    request: Request,  # Required for rate limiting
     event_id: int,
     limit: int = Query(50, ge=1, le=100, description="Number of changelog entries to return"),
     current_user: User = Depends(get_current_active_user),

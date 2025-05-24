@@ -1,115 +1,129 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from datetime import timedelta
+from typing import Any
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 
-from app.core.database import get_db
-from app.services.auth_service import AuthService
-from app.schemas.auth import LoginRequest, TokenResponse, TokenRefresh
-from app.schemas.user import UserCreate, UserResponse
-from app.api.deps import get_current_active_user
+from app.api import deps
+from app.core import security
+from app.core.config import settings
+from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
 from app.models.user import User
+from app.schemas.auth import UserCreate, UserResponse, Token, UserLogin
+from app.schemas.user import UserCreate as UserCreateSchema
 
-router = APIRouter()
+# Create limiter instance
 limiter = Limiter(key_func=get_remote_address)
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit("5/minute")  # Rate limit registration attempts
+router = APIRouter()
+
+@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def register(
+    request: Request,  # Required for rate limiting
     user_data: UserCreate,
-    db: Session = Depends(get_db)
-):
-    """
-    Register a new user account.
-    
-    Creates user with hashed password and returns authentication tokens.
-    Rate limited to prevent abuse.
-    """
-    try:
-        # Create user
-        user = AuthService.create_user(db, user_data)
-        
-        # Generate tokens
-        tokens = AuthService.create_tokens(user)
-        
-        return tokens
-        
-    except HTTPException:
-        raise
-    except Exception as e:
+    db: Session = Depends(deps.get_db)
+) -> Any:
+    """Register a new user."""
+    # Check if username already exists
+    existing_user = db.query(User).filter(User.username == user_data.username).first()
+    if existing_user:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Registration failed"
-        )
-
-@router.post("/login", response_model=TokenResponse)
-@limiter.limit("10/minute")  # Rate limit login attempts
-async def login(
-    login_data: LoginRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    Authenticate user and return access tokens.
-    
-    Accepts either username or email with password.
-    Rate limited to prevent brute force attacks.
-    """
-    user = AuthService.authenticate_user(db, login_data)
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username/email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered"
         )
     
-    tokens = AuthService.create_tokens(user)
-    return tokens
-
-@router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(
-    token_data: TokenRefresh,
-    db: Session = Depends(get_db)
-):
-    """
-    Refresh access token using valid refresh token.
-    
-    Allows clients to get new access tokens without re-authentication.
-    """
-    try:
-        tokens = AuthService.refresh_access_token(db, token_data.refresh_token)
-        return tokens
-    except HTTPException:
-        raise
-    except Exception:
+    # Check if email already exists
+    existing_email = db.query(User).filter(User.email == user_data.email).first()
+    if existing_email:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
         )
-
-@router.post("/logout", status_code=status.HTTP_200_OK)
-async def logout(
-    current_user: User = Depends(get_current_active_user)
-):
-    """
-    Logout user (placeholder for token blacklisting).
     
-    In a production system, this would blacklist the current tokens.
-    For now, it's a placeholder that confirms successful logout.
-    """
+    # Create new user
+    hashed_password = get_password_hash(user_data.password)
+    db_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        hashed_password=hashed_password,
+        full_name=user_data.full_name
+    )
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    # Create tokens
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(db_user.id), "username": db_user.username, "role": db_user.role.value},
+        expires_delta=access_token_expires
+    )
+    refresh_token = create_refresh_token(data={"sub": str(db_user.id)})
+    
     return {
-        "message": "Successfully logged out",
-        "user_id": current_user.id
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user_id": db_user.id,
+        "username": db_user.username
+    }
+
+@router.post("/login", response_model=Token)
+@limiter.limit("10/minute")
+async def login(
+    request: Request,  # Required for rate limiting
+    user_data: UserLogin,
+    db: Session = Depends(deps.get_db)
+) -> Any:
+    """Login user."""
+    # Find user by username or email
+    user = db.query(User).filter(
+        (User.username == user_data.username) | (User.email == user_data.username)
+    ).first()
+    
+    if not user or not verify_password(user_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username/email or password"
+        )
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user"
+        )
+    
+    # Create tokens
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(user.id), "username": user.username, "role": user.role.value},
+        expires_delta=access_token_expires
+    )
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user_id": user.id,
+        "username": user.username
     }
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user_info(
-    current_user: User = Depends(get_current_active_user)
-):
-    """
-    Get current authenticated user information.
-    
-    Returns user profile data excluding sensitive information.
-    """
+async def get_current_user(
+    current_user: User = Depends(deps.get_current_user)
+) -> Any:
+    """Get current user information."""
     return current_user
+
+@router.post("/logout")
+async def logout(
+    current_user: User = Depends(deps.get_current_user)
+) -> Any:
+    """Logout user."""
+    # In a real implementation, you'd invalidate the token
+    return {"message": "Successfully logged out"}
