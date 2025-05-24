@@ -22,6 +22,7 @@ from app.core.security import get_password_hash, create_access_token
 
 # Test database URL - using SQLite for testing
 TEST_DATABASE_URL = "sqlite:///./test_event_management.db"
+TEST_REDIS_URL = "redis://localhost:6379/1"  # Use database 1 for tests
 
 # Create test engine
 test_engine = create_engine(

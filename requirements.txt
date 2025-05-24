@@ -32,3 +32,30 @@ black
 isort
 flake8
 click
+
+# New integrations for production
+# Email support
+aiosmtplib
+jinja2
+
+# File handling
+aiofiles
+python-multipart
+
+# External API integrations
+httpx
+google-api-python-client
+google-auth
+google-auth-oauthlib
+
+# Monitoring and logging
+sentry-sdk[fastapi]
+
+# Background tasks
+celery[redis]
+
+# Database connection pooling
+psycopg2-pool
+
+# Environment-specific
+gunicorn  # Production WSGI server
