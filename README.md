@@ -173,11 +173,11 @@ Once the server is running, access the comprehensive interactive API documentati
 #### Event Management Testing Examples
 
 **Event Creation**
-![Event Creation Test](./app/public/test_event_create.png)
+![Event Creation Test](./app/public/test_event_creation.png)
 *Example of creating a new event with all required fields and successful response*
 
 **Get Event by ID**
-![Get Event by ID Test](./app/public/test_event_get_by_id.png)
+![Get Event by ID Test](./app/public/test_event_GetById.png)
 *Retrieving a specific event showing detailed event information*
 
 **Event History**
@@ -212,11 +212,11 @@ Once the server is running, access the comprehensive interactive API documentati
 The following examples demonstrate the complete event management workflow:
 
 #### 1. Creating Events
-![Event Creation Process](./app/public/test_event_create.png)
+![Event Creation Process](./app/public/test_event_creation.png)
 *Step-by-step event creation with validation and conflict detection*
 
 #### 2. Retrieving Event Details
-![Event Details Retrieval](./app/public/test_event_get_by_id.png)
+![Event Details Retrieval](./app/public/test_event_GetById.png)
 *Accessing detailed event information with permission validation*
 
 #### 3. Version History Tracking
