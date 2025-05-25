@@ -61,8 +61,8 @@ class EventPermission(Base):
     
     # Relationships
     event = relationship("Event", back_populates="permissions")
-    user = relationship("User", back_populates="permissions", foreign_keys=[user_id])
-    granted_by_user = relationship("User", foreign_keys=[granted_by])
+    user = relationship("User", back_populates="permissions", foreign_keys="EventPermission.user_id")
+    granted_by_user = relationship("User", back_populates="granted_permissions", foreign_keys="EventPermission.granted_by")
     
     def __repr__(self):
         return f"<EventPermission(event_id={self.event_id}, user_id={self.user_id}, level={self.permission_level})>"

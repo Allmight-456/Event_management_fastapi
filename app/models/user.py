@@ -40,4 +40,5 @@ class User(Base):
     
     # Relationships
     owned_events = relationship("Event", back_populates="owner")
-    permissions = relationship("EventPermission", back_populates="user")
+    permissions = relationship("EventPermission", back_populates="user", foreign_keys="EventPermission.user_id")
+    granted_permissions = relationship("EventPermission", foreign_keys="EventPermission.granted_by")
