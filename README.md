@@ -327,11 +327,11 @@ horization** for all operations
 - Visual diff representation
 - Changelog generation
 
-![Version Control Demo](./public/version-control.png)
+![Version Control Demo](./app/public/img2.png)
 *Event versioning and diff comparison functionality*
 
 ### Version History View
-![Version History](./public/version-history.png)
+![Version History](./app/public/img1.png)
 *Complete audit trail with detailed change tracking*
 
 ## 🤝 Contributing
@@ -420,13 +420,13 @@ For support, email support@yourcompany.com or create an issue in the repository.
 This API is designed to work seamlessly with modern frontend frameworks:
 
 ### React/Next.js Integration
-![React Integration](./public/react-integration.png)
+![React Integration](./app/public/img2.png)
 *Example React components consuming the API*
 
 ### Vue.js Integration  
-![Vue Integration](./public/vue-integration.png)
+![Vue Integration](./app/public/img1.png)
 *Vue.js application with real-time event updates*
 
 ### Mobile App Support
-![Mobile API](./public/mobile-api.png)
+![Mobile API](./app/public/img3.png)
 *RESTful API perfect for mobile app development*
