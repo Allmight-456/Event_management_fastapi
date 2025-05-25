@@ -68,32 +68,24 @@ class VersionService:
                 detail=f"Version {version_number} not found"
             )
         
-        # Create version record before rollback
-        current_version = EventVersion(
-            event_id=event.id,
-            version_number=event.version,
-            title=event.title,
-            description=event.description,
-            location=event.location,
-            start_time=event.start_time,
-            end_time=event.end_time,
-            is_recurring=event.is_recurring,
-            recurrence_type=event.recurrence_type,
-            recurrence_pattern=event.recurrence_pattern,
-            changed_by=user.id,
-            change_summary=f"Rollback to version {version_number}"
-        )
-        db.add(current_version)
+        # Import EventService to create version
+        from app.services.event_service import EventService
         
-        # Apply rollback
-        event.title = target_version.title
-        event.description = target_version.description
-        event.location = target_version.location
-        event.start_time = target_version.start_time
-        event.end_time = target_version.end_time
-        event.is_recurring = target_version.is_recurring
-        event.recurrence_type = target_version.recurrence_type
-        event.recurrence_pattern = target_version.recurrence_pattern
+        # Create version record before rollback
+        EventService._create_version(db, event, user, f"Rollback to version {version_number}")
+        
+        # Apply rollback using event_data
+        event_data = target_version.event_data
+        from app.models.event import RecurrenceType
+        
+        event.title = event_data.get("title")
+        event.description = event_data.get("description")
+        event.location = event_data.get("location")
+        event.start_time = datetime.fromisoformat(event_data.get("start_time")) if event_data.get("start_time") else None
+        event.end_time = datetime.fromisoformat(event_data.get("end_time")) if event_data.get("end_time") else None
+        event.is_recurring = event_data.get("is_recurring", False)
+        event.recurrence_type = RecurrenceType(event_data.get("recurrence_type", "none"))
+        event.recurrence_pattern = event_data.get("recurrence_pattern")
         event.version += 1
         event.updated_at = datetime.utcnow()
         
@@ -137,7 +129,7 @@ class VersionService:
                 detail="One or both versions not found"
             )
         
-        # Compare fields
+        # Compare fields using event_data
         diff = {
             "version1": version1,
             "version2": version2,
@@ -155,8 +147,8 @@ class VersionService:
         ]
         
         for field in comparable_fields:
-            val1 = getattr(v1, field)
-            val2 = getattr(v2, field)
+            val1 = v1.event_data.get(field)
+            val2 = v2.event_data.get(field)
             
             if val1 != val2:
                 diff["changes"][field] = {
@@ -185,6 +177,7 @@ class VersionService:
         
         changelog = []
         for version in versions:
+            event_data = version.event_data
             changelog_entry = {
                 "version": version.version_number,
                 "changed_by": version.changed_by,
@@ -192,13 +185,13 @@ class VersionService:
                 "change_summary": version.change_summary,
                 "timestamp": version.created_at.isoformat(),
                 "event_state": {
-                    "title": version.title,
-                    "description": version.description,
-                    "location": version.location,
-                    "start_time": version.start_time.isoformat(),
-                    "end_time": version.end_time.isoformat(),
-                    "is_recurring": version.is_recurring,
-                    "recurrence_type": version.recurrence_type.value if version.recurrence_type else None
+                    "title": event_data.get("title"),
+                    "description": event_data.get("description"),
+                    "location": event_data.get("location"),
+                    "start_time": event_data.get("start_time"),
+                    "end_time": event_data.get("end_time"),
+                    "is_recurring": event_data.get("is_recurring"),
+                    "recurrence_type": event_data.get("recurrence_type")
                 }
             }
             changelog.append(changelog_entry)
