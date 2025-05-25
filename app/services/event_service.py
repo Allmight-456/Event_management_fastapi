@@ -41,8 +41,12 @@ class EventService:
         db.commit()
         db.refresh(db_event)
         
-        # Create initial version
-        EventService._create_version(db, db_event, owner, "Initial creation")
+        # Create initial version AFTER the event is committed and has an ID
+        try:
+            EventService._create_version(db, db_event, owner, "Initial creation")
+        except Exception as e:
+            # Log the error but don't fail the event creation
+            print(f"Warning: Failed to create initial version: {e}")
         
         return db_event
     
@@ -236,23 +240,35 @@ class EventService:
     @staticmethod
     def _create_version(db: Session, event: Event, user: User, change_summary: str):
         """Create a version record for the current event state."""
+        # Ensure event has an ID before creating version
+        if not event.id:
+            raise ValueError("Event must be saved to database before creating version")
+            
         version = EventVersion(
             event_id=event.id,
             version_number=event.version,
-            title=event.title,
-            description=event.description,
-            location=event.location,
-            start_time=event.start_time,
-            end_time=event.end_time,
-            is_recurring=event.is_recurring,
-            recurrence_type=event.recurrence_type,
-            recurrence_pattern=event.recurrence_pattern,
+            event_data={
+                "title": event.title,
+                "description": event.description,
+                "location": event.location,
+                "start_time": event.start_time.isoformat() if event.start_time else None,
+                "end_time": event.end_time.isoformat() if event.end_time else None,
+                "is_recurring": event.is_recurring,
+                "recurrence_type": event.recurrence_type.value if event.recurrence_type else None,
+                "recurrence_pattern": event.recurrence_pattern
+            },
             changed_by=user.id,
-            change_summary=change_summary
+            change_summary=change_summary,
+            change_reason="Event lifecycle",
+            is_current=True
         )
         
         db.add(version)
-        db.commit()
+        try:
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise e
     
     @staticmethod
     def _generate_change_summary(event: Event, update_data: Dict[str, Any]) -> str:

@@ -170,6 +170,20 @@ Once the server is running, access the comprehensive interactive API documentati
 - `DELETE /api/v1/events/{id}` - Delete event
 - `POST /api/v1/events/batch` - Batch create events
 
+#### Event Management Testing Examples
+
+**Event Creation**
+![Event Creation Test](./app/public/test_event_create.png)
+*Example of creating a new event with all required fields and successful response*
+
+**Get Event by ID**
+![Get Event by ID Test](./app/public/test_event_get_by_id.png)
+*Retrieving a specific event showing detailed event information*
+
+**Event History**
+![Event History Test](./app/public/test_event_history.png)
+*Viewing complete version history and change tracking for an event*
+
 ### Version Control
 - `GET /api/v1/events/{id}/history` - Get event history
 - `GET /api/v1/events/{id}/versions/{version}` - Get specific version
@@ -177,12 +191,42 @@ Once the server is running, access the comprehensive interactive API documentati
 - `GET /api/v1/events/{id}/diff/{v1}/{v2}` - Compare versions
 - `GET /api/v1/events/{id}/changelog` - Get changelog
 
-### Collaboration
-- `POST /api/v1/events/{id}/share` - Share event
-- `GET /api/v1/events/{id}/permissions` - Get permissions
-- `PUT /api/v1/events/{id}/permissions/{user_id}` - Update permission
-- `DELETE /api/v1/events/{id}/permissions/{user_id}` - Revoke permission
-- `GET /api/v1/events/{id}/collaborators` - Get collaborators
+#### Version Control Testing Examples
+
+**Event Version History**
+![Event Version History](./app/public/test_event_history.png)
+*Complete audit trail showing all changes made to an event over time*
+
+**Version Comparison**
+![Version Comparison Test](./app/public/test_version_diff.png)
+*Side-by-side comparison of different event versions showing exact changes*
+
+**Event Rollback**
+![Event Rollback Test](./app/public/test_event_rollback.png)
+*Rolling back an event to a previous version with change tracking*
+
+## 🎯 API Testing Examples
+
+### Event Lifecycle Management
+
+The following examples demonstrate the complete event management workflow:
+
+#### 1. Creating Events
+![Event Creation Process](./app/public/test_event_create.png)
+*Step-by-step event creation with validation and conflict detection*
+
+#### 2. Retrieving Event Details
+![Event Details Retrieval](./app/public/test_event_get_by_id.png)
+*Accessing detailed event information with permission validation*
+
+#### 3. Version History Tracking
+![Version History Management](./app/public/test_event_history.png)
+*Complete audit trail with change summaries and user attribution*
+
+#### 4. Advanced Version Features
+- **Version Comparison**: Compare any two versions to see exact changes
+- **Event Rollback**: Restore events to previous states with full tracking
+- **Change Attribution**: See who made what changes and when
 
 ## 🐳 Docker Deployment
 
