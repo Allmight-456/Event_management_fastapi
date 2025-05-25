@@ -220,7 +220,7 @@ The following examples demonstrate the complete event management workflow:
 *Accessing detailed event information with permission validation*
 
 #### 3. Version History Tracking
-![Version History Management](./app/public/test_event_history.png)
+![Version History Management](./app/public/test_event_version_history.png)
 *Complete audit trail with change summaries and user attribution*
 
 #### 4. Advanced Version Features
