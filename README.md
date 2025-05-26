@@ -198,11 +198,11 @@ Once the server is running, access the comprehensive interactive API documentati
 *Complete audit trail showing all changes made to an event over time*
 
 **Version Comparison**
-![Version Comparison Test](./app/public/test_version_diff.png)
+![Version Comparison Test](./app/public/test_event_diff_version.png)
 *Side-by-side comparison of different event versions showing exact changes*
 
-**Event Rollback**
-![Event Rollback Test](./app/public/test_event_rollback.png)
+**Event Update**
+![Event Rollback Test](./app/public/test_event_update.png)
 *Rolling back an event to a previous version with change tracking*
 
 ## 🎯 API Testing Examples
@@ -220,7 +220,7 @@ The following examples demonstrate the complete event management workflow:
 *Accessing detailed event information with permission validation*
 
 #### 3. Version History Tracking
-![Version History Management](./app/public/test_event_history.png)
+![Version History Management](./app/public/test_event_version_history.png)
 *Complete audit trail with change summaries and user attribution*
 
 #### 4. Advanced Version Features
