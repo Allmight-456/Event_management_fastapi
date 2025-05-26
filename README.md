@@ -30,7 +30,7 @@ A robust FastAPI-based event management system with real-time collaboration, per
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/Allmight-456/Event_management_fastapi.git
 cd neofi_python_fastapi
 ```
 
