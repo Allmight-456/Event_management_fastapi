@@ -34,28 +34,30 @@ flake8
 click
 
 # New integrations for production
+# For future roadmap items or were included without active implementation.
+# They can be removed to reduce dependency count and build size if not actively used.
 # Email support
-aiosmtplib
-jinja2
+# aiosmtplib
+# jinja2
 
-# File handling
-aiofiles
-python-multipart
+# # File handling
+# aiofiles
+# python-multipart
 
-# External API integrations
-httpx
-google-api-python-client
-google-auth
-google-auth-oauthlib
+# # External API integrations
+# httpx
+# google-api-python-client
+# google-auth
+# google-auth-oauthlib
 
-# Monitoring and logging
-sentry-sdk[fastapi]
+# # Monitoring and logging
+# sentry-sdk[fastapi]
 
-# Background tasks
-celery[redis]
+# # Background tasks
+# celery[redis]
 
-# Database connection pooling
-psycopg2-pool
+# # Database connection pooling
+# psycopg2-pool
 
-# Environment-specific
-gunicorn==21.2.0  # Production WSGI server
+# # Environment-specific
+# gunicorn==21.2.0  # Production WSGI server
